@@ -76,7 +76,6 @@ def summarize():
             return jsonify({"error": "No text provided"}), 400
         
         extractiveText = punctuate(extractive(text, int(request.form.get('summary_length'))))
-        print("Translator is: ", tl.google(extractiveText, to_language='fr'))
         languageDict = {}
         # print(langs)
         # for lang in tl._google.language_map:
@@ -87,11 +86,7 @@ def summarize():
         #         languageDict[lang] = None
         # print(languageDict)
 
-        languages = tl._google.language_map
-        print('All languages: ', languages['af'])
-
-        # abstractiveText = punctuate(abstractive(text, int(request.form.get('summary_length'))))
-        # return jsonify({"Abstractive": abstractiveText, "Extractive": extractiveText})
+        languages = tl._google.language_map['af']
 
         return render_template('summary_display.html', summarizedText = extractiveText, languages = languages)
 

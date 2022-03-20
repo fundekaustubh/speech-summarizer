@@ -1,7 +1,11 @@
 const summaryLength = document.getElementById('summary_length');
 const summaryText = document.getElementById('summary_text');
 summaryText.addEventListener('input', (e) => {
-    summaryLength.value = parseInt(summaryText.value.count(' ') / 2);
+    console.dir(summaryLength);
+    summaryLength.max = e.target.value.trim().match(/[\w|\)][.?!](\s|$)/g).length;
+    if (summaryLength.value > summaryLength.max) {
+        summaryLength.value = summaryLength.max;
+    }
 })
 
 console.log('Hey');

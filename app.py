@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, json
 # from transformers import pipeline
 import nltk.data
-import spacy
+# import spacy
+import translators as tl
 import en_core_web_sm
+from iso639 import languages
 from string import punctuation
 from collections import Counter
 
@@ -68,18 +70,43 @@ def extractive(text, limit):
 
 @app.route('/summarize', methods=["POST"])
 def summarize():
-    text = request.form.get("text")
-    if not text:
-        return jsonify({"error": "No text provided"}), 400
-    
-    extractiveText = punctuate(extractive(text, int(request.form.get('summary_length'))))
-    # abstractiveText = punctuate(abstractive(text, int(request.form.get('summary_length'))))
-    # return jsonify({"Abstractive": abstractiveText, "Extractive": extractiveText})
-    return extractiveText
+    if request.method == 'POST':
+        text = request.form.get("text")
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+        
+        extractiveText = punctuate(extractive(text, int(request.form.get('summary_length'))))
+        print("Translator is: ", tl.google(extractiveText, to_language='fr'))
+        languageDict = {}
+        # print(langs)
+        # for lang in tl._google.language_map:
+        #     try:
+        #         languageDict[lang] = languages.get(alpha_2=lang).name
+        #         print('Done for lanaguage: ', lang)
+        #     except:
+        #         languageDict[lang] = None
+        # print(languageDict)
+
+        languages = tl._google.language_map
+        print('All languages: ', languages['af'])
+
+        # abstractiveText = punctuate(abstractive(text, int(request.form.get('summary_length'))))
+        # return jsonify({"Abstractive": abstractiveText, "Extractive": extractiveText})
+
+        return render_template('summary_display.html', summarizedText = extractiveText, languages = languages)
+
+@app.route('/translate', methods=["POST"])
+def translate():
+    if request.method == 'POST':
+        req = request.get_json()
+        print('Original summary: ', req["originalSummary"])
+        newSummary = tl.google(req["originalSummary"], to_language=req["to"])
+        return jsonify({"translatedSummary": newSummary, "to": req["to"]}), 200
 
 @app.route('/', methods=["GET"])
 def createApplication():
-    return render_template('index.html')
+    if request.method == 'GET':
+        return render_template('index.html')
 
 if __name__ == '__main__':
     app.run()

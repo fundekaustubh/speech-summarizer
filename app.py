@@ -2,14 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 # from transformers import pipeline
 import nltk.data
 # import spacy
-import translators as tl
+# import translators as tl
 import en_core_web_sm
 from iso639 import languages
+
+import googletrans
 from string import punctuation
 from collections import Counter
 
 nlp = en_core_web_sm.load()
 sentenceTokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+translator = googletrans.Translator()
 
 # summarizer = pipeline("summarization", model="t5-base")
 
@@ -76,26 +79,16 @@ def summarize():
             return jsonify({"error": "No text provided"}), 400
         
         extractiveText = punctuate(extractive(text, int(request.form.get('summary_length'))))
-        languageDict = {}
-        # print(langs)
-        # for lang in tl._google.language_map:
-        #     try:
-        #         languageDict[lang] = languages.get(alpha_2=lang).name
-        #         print('Done for lanaguage: ', lang)
-        #     except:
-        #         languageDict[lang] = None
-        # print(languageDict)
-
-        languages = tl._google.language_map['af']
-
-        return render_template('summary_display.html', summarizedText = extractiveText, languages = languages)
+        languages = [lang.capitalize() for lang in googletrans.LANGUAGES.values()]
+        return render_template('summary.html', summarizedText = extractiveText, languages = languages)
 
 @app.route('/translate', methods=["POST"])
 def translate():
     if request.method == 'POST':
         req = request.get_json()
         print('Original summary: ', req["originalSummary"])
-        newSummary = tl.google(req["originalSummary"], to_language=req["to"])
+        newSummary = translator.translate('' + req["originalSummary"], dest=req["to"]).text
+        # newSummary = tl.google(req["originalSummary"], to_language=req["to"])
         return jsonify({"translatedSummary": newSummary, "to": req["to"]}), 200
 
 @app.route('/', methods=["GET"])

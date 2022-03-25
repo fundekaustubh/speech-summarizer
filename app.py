@@ -77,8 +77,11 @@ def summarize():
         text = request.form.get("text")
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        
-        extractiveText = punctuate(extractive(text, int(request.form.get('summary_length'))))
+        print(request.form.get('summary_length'))
+        numberOfSentences = 0
+        if request.form.get('summary_length') != None:
+            numberOfSentences = int(request.form.get('summary_length')) 
+        extractiveText = punctuate(extractive(text, numberOfSentences))
         languages = [lang.capitalize() for lang in googletrans.LANGUAGES.values()]
         return render_template('summary.html', summarizedText = extractiveText, languages = languages)
 

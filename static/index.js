@@ -11,5 +11,3 @@ summaryTextBox.addEventListener('input', (e) => {
     summaryTextBox.style.height = ""; /* Reset the height*/
     summaryTextBox.style.height = Math.min(summaryTextBox.scrollHeight, heightLimit) + "px";
 })
-
-console.log('Hey');

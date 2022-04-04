@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, json
 # from transformers import pipeline
 import nltk.data
@@ -5,6 +6,7 @@ import nltk.data
 # import translators as tl
 import en_core_web_sm
 from iso639 import languages
+from decouple import config
 
 import googletrans
 from string import punctuation
@@ -16,12 +18,15 @@ translator = googletrans.Translator()
 
 # summarizer = pipeline("summarization", model="t5-base")
 
-config = {
+configuration = {
     "DEBUG": True
 }
+# SECRET_KEY = os.getenv('SECRET_KEY')
 
 app = Flask(__name__)
-app.config.from_mapping(config)
+app.config.from_mapping(configuration)
+# app.secret_key = config(SECRET_KEY)
+# print(app.secret_key)
 
 def punctuate(text):
     sentences = sentenceTokenizer.tokenize(text)
@@ -76,13 +81,15 @@ def summarize():
     if request.method == 'POST':
         text = request.form.get("text")
         if not text:
-            return jsonify({"error": "No text provided"}), 400
+            flash("Please enter text to summarize!")
         print(request.form.get('summary_length'))
         numberOfSentences = 0
-        if request.form.get('summary_length') != None:
-            numberOfSentences = int(request.form.get('summary_length')) 
-        extractiveText = punctuate(extractive(text, numberOfSentences))
         languages = [lang.capitalize() for lang in googletrans.LANGUAGES.values()]
+        numberOfSentences = request.form.get('summary_length')
+        if numberOfSentences == None or numberOfSentences == 0 :
+            print('Checking number of sentences! Number: ', numberOfSentences)
+            return render_template('summary.html', summarizedText = text, languages = languages) 
+        extractiveText = punctuate(extractive(text, numberOfSentences))
         return render_template('summary.html', summarizedText = extractiveText, languages = languages)
 
 @app.route('/translate', methods=["POST"])

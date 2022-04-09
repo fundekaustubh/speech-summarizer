@@ -82,10 +82,9 @@ def summarize():
         text = request.form.get("text")
         if not text:
             flash("Please enter text to summarize!")
-        print(request.form.get('summary_length'))
-        numberOfSentences = 0
+        print(request.form.get('summaryLength'))
         languages = [lang.capitalize() for lang in googletrans.LANGUAGES.values()]
-        numberOfSentences = request.form.get('summary_length')
+        numberOfSentences = int(request.form.get('summaryLength'))
         if numberOfSentences == None or numberOfSentences == 0 :
             print('Checking number of sentences! Number: ', numberOfSentences)
             return render_template('summary.html', summarizedText = text, languages = languages) 
